@@ -5,12 +5,14 @@ import java.util.stream.Collectors;
 
 public class SiteStateTracker {
 
-    public static String generateChangesReport(Map<String, String> yesterdayState, Map<String, String> todayState) {
+    public static String generateChangesReport(Map<String, String> yesterdayState,
+                                               Map<String, String> todayState, String name) {
+
         Objects.requireNonNull(yesterdayState, "Yesterday's state map is null.");
         Objects.requireNonNull(todayState, "Today's state map is null.");
 
         StringBuilder report = new StringBuilder();
-        report.append("Здравствуйте, дорогая и.о. секретаря\n\n");
+        report.append("Здравствуйте, дорогая, ").append(name).append(", \n\n");
         report.append("За последние сутки во вверенных Вам сайтах произошли следующие изменения:\n");
 
         List<String> disappearedPages = findDisappearedPages(yesterdayState.keySet(), todayState.keySet());
@@ -77,7 +79,7 @@ public class SiteStateTracker {
         );
 
         try {
-            String report = SiteStateTracker.generateChangesReport(yesterdayState, todayState);
+            String report = SiteStateTracker.generateChangesReport(yesterdayState, todayState, "Name SecondName");
             System.out.println(report);
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
