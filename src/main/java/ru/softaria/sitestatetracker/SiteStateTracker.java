@@ -77,7 +77,7 @@ public class SiteStateTracker {
             String report = SiteStateTracker.generateChangesReport(yesterdayState, todayState);
             System.out.println(report);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Error: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
     }
 }
