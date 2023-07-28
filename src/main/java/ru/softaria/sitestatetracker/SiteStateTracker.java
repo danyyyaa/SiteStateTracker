@@ -1,4 +1,4 @@
-package ru.softaria;
+package ru.softaria.sitestatetracker;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -6,20 +6,17 @@ import java.util.stream.Collectors;
 public class SiteStateTracker {
 
     public static String generateChangesReport(Map<String, String> yesterdayState, Map<String, String> todayState) {
-        if (yesterdayState == null && todayState == null) {
-            throw new IllegalArgumentException("Both yesterdayState and todayState maps are null.");
-        } else if (yesterdayState == null) {
-            throw new IllegalArgumentException("Yesterday's state map is null.");
-        } else if (todayState == null) {
-            throw new IllegalArgumentException("Today's state map is null.");
-        }
+        Objects.requireNonNull(yesterdayState, "Yesterday's state map is null.");
+        Objects.requireNonNull(todayState, "Today's state map is null.");
 
         StringBuilder report = new StringBuilder();
         report.append("Здравствуйте, дорогая и.о. секретаря\n\n");
         report.append("За последние сутки во вверенных Вам сайтах произошли следующие изменения:\n");
 
-        List<String> disappearedPages = findDifferencePages(yesterdayState.keySet(), todayState.keySet(), "исчезли");
-        List<String> newPages = findDifferencePages(yesterdayState.keySet(), todayState.keySet(), "появились");
+        List<String> disappearedPages =
+                findDifferencePages(yesterdayState.keySet(), todayState.keySet(), "исчезли");
+        List<String> newPages =
+                findDifferencePages(yesterdayState.keySet(), todayState.keySet(), "появились");
         List<String> changedPages = findChangedPages(yesterdayState, todayState);
 
         if (!disappearedPages.isEmpty()) {
@@ -41,9 +38,11 @@ public class SiteStateTracker {
         return report.toString();
     }
 
-    private static List<String> findDifferencePages(Set<String> yesterdayUrls, Set<String> todayUrls, String differenceType) {
+    private static List<String> findDifferencePages(Set<String> yesterdayUrls,
+                                                    Set<String> todayUrls, String differenceType) {
+        Set<String> todayUrlsSet = new HashSet<>(todayUrls);
         return yesterdayUrls.stream()
-                .filter(url -> !todayUrls.contains(url))
+                .filter(url -> !todayUrlsSet.contains(url))
                 .map(url -> differenceType + ": " + url)
                 .collect(Collectors.toList());
     }
@@ -51,15 +50,13 @@ public class SiteStateTracker {
     private static List<String> findChangedPages(Map<String, String> yesterdayState, Map<String, String> todayState) {
         return yesterdayState.entrySet().stream()
                 .filter(entry -> todayState.containsKey(entry.getKey()) &&
-                        !todayState.get(entry.getKey()).equals(entry.getValue()))
+                        !Objects.equals(todayState.get(entry.getKey()), entry.getValue()))
                 .map(entry -> "изменилась: " + entry.getKey())
                 .collect(Collectors.toList());
     }
 
     private static void appendPageList(StringBuilder report, List<String> pages) {
-        for (String page : pages) {
-            report.append(" - ").append(page).append("\n");
-        }
+        pages.forEach(page -> report.append(" - ").append(page).append("\n"));
     }
 
     public static void main(String[] args) {
@@ -80,7 +77,7 @@ public class SiteStateTracker {
             String report = SiteStateTracker.generateChangesReport(yesterdayState, todayState);
             System.out.println(report);
         } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+            throw new IllegalArgumentException("Error: " + e.getMessage());
         }
     }
 }
