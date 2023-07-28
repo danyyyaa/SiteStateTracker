@@ -13,10 +13,8 @@ public class SiteStateTracker {
         report.append("Здравствуйте, дорогая и.о. секретаря\n\n");
         report.append("За последние сутки во вверенных Вам сайтах произошли следующие изменения:\n");
 
-        List<String> disappearedPages =
-                findDifferencePages(yesterdayState.keySet(), todayState.keySet(), "исчезли");
-        List<String> newPages =
-                findDifferencePages(yesterdayState.keySet(), todayState.keySet(), "появились");
+        List<String> disappearedPages = findDisappearedPages(yesterdayState.keySet(), todayState.keySet());
+        List<String> newPages = findNewPages(yesterdayState.keySet(), todayState.keySet());
         List<String> changedPages = findChangedPages(yesterdayState, todayState);
 
         if (!disappearedPages.isEmpty()) {
@@ -38,25 +36,30 @@ public class SiteStateTracker {
         return report.toString();
     }
 
-    private static List<String> findDifferencePages(Set<String> yesterdayUrls,
-                                                    Set<String> todayUrls, String differenceType) {
-        Set<String> todayUrlsSet = new HashSet<>(todayUrls);
+    private static List<String> findDisappearedPages(Set<String> yesterdayUrls, Set<String> todayUrls) {
         return yesterdayUrls.stream()
-                .filter(url -> !todayUrlsSet.contains(url))
-                .map(url -> differenceType + ": " + url)
-                .collect(Collectors.toList());
+                .filter(url -> !todayUrls.contains(url))
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    private static List<String> findNewPages(Set<String> yesterdayUrls, Set<String> todayUrls) {
+        return todayUrls.stream()
+                .filter(url -> !yesterdayUrls.contains(url))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     private static List<String> findChangedPages(Map<String, String> yesterdayState, Map<String, String> todayState) {
         return yesterdayState.entrySet().stream()
                 .filter(entry -> todayState.containsKey(entry.getKey()) &&
                         !Objects.equals(todayState.get(entry.getKey()), entry.getValue()))
-                .map(entry -> "изменилась: " + entry.getKey())
-                .collect(Collectors.toList());
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private static void appendPageList(StringBuilder report, List<String> pages) {
-        pages.forEach(page -> report.append(" - ").append(page).append("\n"));
+    private static void appendPageList(StringBuilder report, Collection<String> pages) {
+        StringJoiner joiner = new StringJoiner("\n");
+        pages.forEach(joiner::add);
+        report.append(" - ").append(joiner).append("\n");
     }
 
     public static void main(String[] args) {
