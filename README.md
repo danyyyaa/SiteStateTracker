@@ -1,6 +1,6 @@
 # SiteStateTracker
 
-Стек технологий: Java(no frameworks)
+Стек технологий: Java(no frameworks) + Maven
 
 ---
 
